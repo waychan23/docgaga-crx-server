@@ -1,0 +1,4 @@
+**/node_modules
+**/.vscode
+**/.tern-port
+**/.nyc_output

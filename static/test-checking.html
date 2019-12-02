@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+    </head>
+    <body>
+
+        <div>
+            <button id="login-btn">登录</button>
+            &nbsp;|&nbsp;
+            <button id="logout-btn">退出登录</button>
+        </div>
+        <div id="user">
+        </div>
+        <script type="text/javascript" src="lib/common.js"></script>
+        <script type="text/javascript">
+        var $  = require('jquery'),
+            loginBtn = $("#login-btn"),
+            logoutBtn = $("#logout-btn"),
+            user = $("#user"),
+            timeout = 60 * 1000 * 2,
+            pollInterval = 8000,
+            startCheckTime,
+            ticket,
+            timer,
+            polling = false,
+            resultWin;
+
+        function check(){
+            console.log('checking...');
+            $.ajax({
+                'url': '/docgagacrx/auth/check',
+                'data': { ticket: ticket },
+                'success': function(resp){
+                    if(!resp){
+                        handleError('no response');
+                        return;
+                    }
+                    if(resp.error){
+                        handleError(resp.error);
+                        return;
+                    }
+                    if(polling && resp.state == 'pending'){
+                        var t = new Date().getTime();
+                        if(t - startCheckTime > timeout){
+                            user.text('登录超时');
+                            polling = false;
+                        }else{
+                            if(resultWin && !resultWin.closed){
+                                pollInterval = Math.floor(pollInterval * 1.2);
+                            }
+                            setTimeout(check, pollInterval);
+                        }
+
+                    }else if(resp.state == 'login' && resp.result){
+                        user.text('登录成功: '+resp.result.username);
+                        polling = false;
+                    }else{
+                        user.text('登录失败');
+                        polling = false;
+                        clearInterval(timer);
+                    }
+                },
+                'error': function(err){
+                    handleError(err);
+                }
+            });
+        }
+
+        function checkLogin(){
+            startCheckTime = new Date().getTime();
+            polling = true;
+            pollInterval = 8000;
+//            setTimeout(check, pollInterval);
+        }
+
+        function requestLogin(){
+            
+            resultWin = window.open('/docgagacrx/auth?ticket='+encodeURIComponent(ticket), '_blank');
+            if(timer){
+                clearInterval(timer);
+            }
+            timer = setInterval(function(){
+                var t = new Date().getTime();
+
+                if(resultWin.closed && polling){
+                    clearInterval(timer);
+
+                    check();
+
+                    polling = false;
+                }else{
+                    if(t - startCheckTime >= timeout){
+                        polling = false;
+                        user.text('登录超时');
+                        if(resultWin && !resultWin.closed){
+                            resultWin.close();
+                        }
+                    }
+                }
+            }, 1500);
+
+            checkLogin();            
+        }
+
+        logoutBtn.on('click', function(){
+            polling = false;
+            if(resultWin && !resultWin.closed){
+                resultWin.close();
+            }
+            user.text('正在退出登录...');
+            $.ajax({
+                url: '/docgagacrx/auth/logout',
+                success: function(){
+                    user.text('已退出登录');
+                },
+                error: function(err){
+                    console.error(err);
+                    user.text('退出登录失败');
+                }
+            });
+        });
+
+        loginBtn.on('click', function(){
+            if(resultWin && !resultWin.closed){
+                user.text('登录窗口已打开，正在登录中...');
+                return;
+            }
+            $.ajax({ 
+                url: '/docgagacrx/auth/login', 
+                success: function(resp){
+                    if(!resp.ticket && !resp.result){
+                        handleError('failed');
+                        return;
+                    }
+                    if(resp.ticket){
+                        ticket = resp.ticket;
+                        requestLogin();
+                        user.text('登录中 ...');
+                    }else if(resp.result){
+                        user.text('已经登录: '+resp.result.username);
+                    }
+                },
+                error: function(err){
+                    handleError(err);
+                }
+            });
+        });
+
+        function handleError(err){
+            console.error(err);
+        }
+
+        window.onbeforeunload = function(){
+            if(resultWin && !resultWin.closed){
+                resultWin.close();
+            }
+        }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>授权请求 - 汤圆笔记-浏览器插件</title>
+        <meta charset="UTF-8"/>
+    </head>
+    <body style="text-align: center;">
+        <%- msg %>
+        <input type="hidden" id="redirect_uri" value="<%= redirectUri %>"/>
+        <input type="hidden" id="wait_seconds" value="<%- waitSeconds %>">
+        <script type="text/javascript">
+
+        var uri = document.getElementById('redirect_uri').value,
+            waitSeconds = document.getElementById('wait_seconds').value;
+
+        waitSeconds = Math.floor(parseFloat(waitSeconds) * 1000);
+
+        setTimeout(function(){
+            window.location.href = uri;
+        }, waitSeconds);
+
+        </script>
+    </body>
+</html>

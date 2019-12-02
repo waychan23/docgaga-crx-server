@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>提示 - 汤圆笔记-浏览器插件</title>
+        <style type="text/css">
+        #main{
+            margin: 100px auto;
+            width: 350px;
+            box-shadow: 0 0 10px #888888;
+            padding: 2em;
+            border-radius: 10px;
+        }
+
+        #logo{
+            padding: .5em;
+        }
+
+        #info{
+            text-align: center;
+            font-size: 1.5em;
+            padding: 1em;
+            color: red;
+        }
+
+        #links{
+            text-align: center;
+        }
+
+        #links a{
+            text-decoration: none;
+            color: #0000FF;
+        }
+
+        #tip{
+            margin-top: 2em;
+            font-size: .8em;
+            color: #555555;
+        }
+        </style>
+    </head>
+    <body>
+        <div id="main">
+            <div id="logo">
+                <span style="color: #FFAA00;">汤</span>
+                <span style="color: #00EEAA;">圆</span>
+                <span style="color: #DDAA22;">笔</span>
+                <span style="color: #0055EE;">记</span>
+                - 浏览器插件
+            </div>
+            <div id="info"><%- error %></div>
+            <div id="links">
+                <% if(links){ %>
+                您可以&nbsp;
+                    <% var i = links.length %>
+                    <% links.forEach(function(link){ %>
+                        <% if(link.href){ %>
+                <a href="<%= link.href %>"><%- link.name %></a>
+                       <% }else if(link.onclick){ %>
+                <a href="#" onclick="<%= link.onclick %>"><%- link.name %></a>
+                       <% }else return %>
+                       <% if(i > 1){ %>
+                &nbsp;|&nbsp;
+                       <% } %>
+                       <% i-- %>
+                    <% }) %>
+                <% } %>
+            </div>
+            <div id="tip">
+                提示: 如果没有其他操作，请关闭该页面
+            </div>
+        </div>
+        <script type="text/javascript">
+            var tip = document.getElementById('tip'),
+                startTime = new Date().getTime(),
+                waitTime = 6000;
+
+            setTimeout(function countdown(){
+                t = new Date().getTime();
+
+                if(t - startTime >= waitTime){
+                    window.close();
+                    tip.innerText = '提示: 报歉，您需要手动关闭该页面';
+                }else{
+                    setTimeout(countdown, 1000);
+                    tip.innerText = '提示: 如果没有其他操作，该页面将在'+Math.floor(((waitTime - t + startTime) / 1000))+'秒后自动关闭';
+                }
+
+            }, 0);
+        </script>
+    </body>
+</html>
