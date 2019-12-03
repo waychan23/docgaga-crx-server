@@ -1,7 +1,8 @@
-FROM node:8.16.2-alpine
+FROM node:8.16.2
 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && apk add --no-cache git
+COPY sources.list /etc/apt/sources.list
 
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 RUN npm config set registry https://registry.npm.taobao.org && npm install -g cnpm
 
 COPY server /workspace/server
