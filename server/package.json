@@ -20,7 +20,7 @@
     "koa-session": "^5.5.0",
     "koa-static": "^4.0.1",
     "lodash": "^4.17.4",
-    "mongodb": "^2.2.31",
+    "mongodb": "^3.6.1",
     "regex-utils": "github:waychan23/regex-utils#1.0.0",
     "request": "^2.81.0",
     "sinon": "^3.2.1",
